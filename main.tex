@@ -1,0 +1,971 @@
+\documentclass[aspectratio=169,11pt]{beamer}
+
+% ============================================================
+% Presentación de defensa de tesis
+% Efecto de la dilución aleatoria en el aprendizaje automático
+% profundo con redes neuronales feed-forward
+% Autor: Gamalerio Joaquín Ignacio
+% ============================================================
+
+\usetheme{Madrid}
+\usecolortheme{default}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[frame number]
+\usepackage[spanish,es-nodecimaldot]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{graphicx}
+\usepackage{grffile}
+\usepackage{tikz}
+\usepackage{xcolor}
+\usepackage{ragged2e}
+\usepackage{multicol}
+\usepackage{hyperref}
+
+\definecolor{famafblue}{HTML}{245B91}
+\definecolor{boostred}{HTML}{C7565C}
+\definecolor{softgray}{HTML}{F5F6F7}
+\definecolor{darkgray}{HTML}{404040}
+
+\setbeamercolor{normal text}{fg=darkgray,bg=white}
+\setbeamercolor{alerted text}{fg=boostred}
+\setbeamercolor{frametitle}{fg=white,bg=famafblue}
+\setbeamercolor{progress bar}{fg=boostred,bg=softgray}
+\setbeamercolor{title separator}{fg=boostred}
+\setbeamertemplate{itemize item}{\raise0.2ex\hbox{\scriptsize$\blacktriangleright$}}
+\setbeamertemplate{itemize subitem}{\raise0.2ex\hbox{\scriptsize$\circ$}}
+\setbeamertemplate{caption}{\raggedright\insertcaption\par}
+
+% Ruta base opcional. Si en Overleaf subís las imágenes respetando los paths
+% originales de la tesis, no hace falta cambiar nada.
+\graphicspath{{./}}
+
+% Inserta imagen si existe; si no, deja un placeholder con el path exacto.
+% Esto permite compilar la presentación aun antes de subir las imágenes.
+\newcommand{\thesisimage}[3][]{%
+  \IfFileExists{#2}{\includegraphics[#1]{#2}}{%
+    \begin{center}
+    \fbox{\begin{minipage}[c][#3][c]{0.92\linewidth}
+      \centering\small\textbf{Imagen pendiente}\par\vspace{0.5em}
+      \ttfamily\detokenize{#2}
+    \end{minipage}}
+    \end{center}}
+}
+
+\newcommand{\keymsg}[1]{\begin{block}{Mensaje central}\large #1\end{block}}
+\newcommand{\smallsource}[1]{\vspace{0.3em}{\scriptsize\color{gray}Imagen sugerida de la tesis: \texttt{\detokenize{#1}}}}
+\newcommand{\model}[1]{\textit{#1}}
+\newcommand{\bd}{\model{BoostDropout}}
+\newcommand{\bdn}{\model{BoostDropoutNet}}
+\newcommand{\ofn}{\model{OverFitNet}}
+\newcommand{\don}{\model{DropoutNet}}
+\newcommand{\dcn}{\model{DropConnectNet}}
+
+\title{Efecto de la dilución aleatoria en el aprendizaje automático profundo con redes neuronales \textit{feed-forward}}
+\subtitle{Regularización estocástica mediante Dropout, DropConnect y BoostDropout}
+\author{Gamalerio Joaquín Ignacio}
+\institute{Facultad de Matemática, Astronomía, Física y Computación\\Universidad Nacional de Córdoba\\Director: Dr. Francisco A. Tamarit}
+\date{Mayo, 2026}
+
+\begin{document}
+
+% ------------------------------------------------------------
+\begin{frame}[plain]
+  \titlepage
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{Pregunta central}
+\centering
+\vspace{0.4cm}
+{\Large\bfseries ¿Puede una perturbación estocástica no binaria mejorar la regularización de redes neuronales \textit{feed-forward}?}
+\vspace{0.7cm}
+
+\begin{columns}[T,totalwidth=0.92\textwidth]
+\column{0.30\textwidth}\centering\Large Sobreajuste
+\column{0.30\textwidth}\centering\Large Regularización
+\column{0.30\textwidth}\centering\Large \bd
+\end{columns}
+\vspace{0.8cm}
+\keymsg{La tesis pregunta qué ocurre si la dilución estocástica no solo apaga unidades o conexiones, sino que también puede modular la intensidad de las señales internas.}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{Mapa narrativo de la defensa}
+\begin{enumerate}
+  \item \textbf{Problema:} las redes con alta capacidad expresiva pueden memorizar y no generalizar.
+  \item \textbf{Herramientas clásicas:} Dropout y DropConnect introducen dilución estocástica binaria.
+  \item \textbf{Propuesta:} \bd{} reemplaza la supresión binaria por modulación multiplicativa de activaciones.
+  \item \textbf{Evaluación:} comparación controlada en MNIST con varias semillas.
+  \item \textbf{Resultado:} \bdn{} mejora la generalización en el protocolo estudiado.
+\end{enumerate}
+\vfill
+\begin{alertblock}{Alcance}
+No se busca demostrar superioridad universal, sino evaluar una idea nueva en un escenario controlado y reproducible.
+\end{alertblock}
+\end{frame}
+
+% ------------------------------------------------------------
+\section{Motivación y marco conceptual}
+
+\begin{frame}{Motivación: aprender no es suficiente}
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.50\textwidth}
+\begin{itemize}
+  \item Una red neuronal puede tener muchos parámetros y alta capacidad expresiva.
+  \item Eso le permite capturar regularidades complejas.
+  \item Pero también puede aprender fluctuaciones particulares del conjunto de entrenamiento.
+\end{itemize}
+\vspace{0.3cm}
+\keymsg{El objetivo no es minimizar solamente el error de entrenamiento: el objetivo es generalizar.}
+\column{0.47\textwidth}
+\thesisimage[width=\linewidth]{15_curvas_loss_overfitting.jpg}{4.3cm}
+\smallsource{15_curvas_loss_overfitting.jpg}
+\end{columns}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{Contribución de la tesis}
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.58\textwidth}
+\begin{block}{Aporte principal}
+Se propone y estudia \bd{}, un mecanismo de regularización estocástica basado en una modulación multiplicativa no binaria de activaciones.
+\end{block}
+
+\begin{itemize}
+  \item Se compara contra una red base sin regularización estocástica.
+  \item Se contrasta con dos regularizadores clásicos: Dropout y DropConnect.
+  \item Se evalúa con un protocolo controlado sobre MNIST, usando búsqueda de hiperparámetros y evaluación final multisemilla.
+\end{itemize}
+\column{0.39\textwidth}
+\begin{table}
+\centering
+\small
+\begin{tabular}{ll}
+\toprule
+Modelo & Regularización \\
+\midrule
+\ofn & Ninguna \\
+\don & Dropout \\
+\dcn & DropConnect \\
+\bdn & \bd \\
+\bottomrule
+\end{tabular}
+\end{table}
+\end{columns}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{Redes \textit{feed-forward}: de una unidad a muchas capas}
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.47\textwidth}
+\textbf{Perceptrón simple}
+\thesisimage[width=\linewidth]{01_perceptron_simple.jpg}{4.1cm}
+\smallsource{01_perceptron_simple.jpg}
+\column{0.50\textwidth}
+\textbf{Perceptrón multicapa}
+\thesisimage[width=\linewidth]{02_perceptron_multicapa.jpg}{4.1cm}
+\smallsource{02_perceptron_multicapa.jpg}
+\end{columns}
+\vspace{0.2cm}
+\keymsg{Una red \textit{feed-forward} compone transformaciones capa por capa: entrada $\rightarrow$ representaciones internas $\rightarrow$ salida.}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{Clasificación supervisada en MNIST}
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.52\textwidth}
+\begin{itemize}
+  \item Entrada: imagen de $28\times28$ píxeles, vectorizada en $784$ componentes.
+  \item Salida: una clase entre $0$ y $9$.
+  \item La red produce \textit{logits}; la decisión final se toma por la clase de mayor puntaje.
+  \item La pérdida usada es entropía cruzada.
+\end{itemize}
+\column{0.45\textwidth}
+\thesisimage[width=\linewidth]{mnist_ejemplos.jpg}{4.4cm}
+\smallsource{mnist_ejemplos.jpg}
+\end{columns}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{Entrenamiento de la red}
+\centering
+\begin{tikzpicture}[node distance=1.5cm, every node/.style={font=\small}]
+\node[draw, rounded corners, fill=softgray, minimum width=2.2cm, minimum height=0.9cm] (x) {Entrada};
+\node[draw, rounded corners, fill=softgray, right of=x, xshift=1.6cm, minimum width=2.3cm, minimum height=0.9cm] (pred) {Predicción};
+\node[draw, rounded corners, fill=softgray, right of=pred, xshift=1.8cm, minimum width=2.2cm, minimum height=0.9cm] (loss) {Pérdida};
+\node[draw, rounded corners, fill=softgray, below of=loss, yshift=-0.2cm, minimum width=2.6cm, minimum height=0.9cm] (grad) {Gradientes};
+\node[draw, rounded corners, fill=softgray, left of=grad, xshift=-1.8cm, minimum width=2.7cm, minimum height=0.9cm] (upd) {Actualizar pesos};
+\draw[->, thick] (x) -- (pred);
+\draw[->, thick] (pred) -- (loss);
+\draw[->, thick] (loss) -- (grad);
+\draw[->, thick] (grad) -- (upd);
+\draw[->, thick] (upd.west) to[out=180,in=-90] (x.south);
+\end{tikzpicture}
+\vspace{0.5cm}
+\begin{itemize}
+  \item La retropropagación calcula gradientes aplicando regla de la cadena.
+  \item Adam actualiza parámetros de manera adaptativa.
+  \item La validación permite seleccionar modelos sin tocar el conjunto de test.
+\end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{Conceptos técnicos usados en el experimento}
+\begin{table}
+\centering
+\small
+\begin{tabularx}{0.92\textwidth}{lX}
+\toprule
+Elemento & Rol en el protocolo \\
+\midrule
+ReLU & Activación no lineal en capas ocultas. \\
+Entropía cruzada & Pérdida adecuada para clasificación multiclase. \\
+Adam & Optimizador adaptativo usado para entrenar. \\
+Entrenamiento/validación/test & Separación entre ajuste, selección y evaluación final. \\
+Early stopping & Criterio alternativo para seleccionar un artefacto durante entrenamiento. \\
+Múltiples semillas & Control de variabilidad por inicialización y aleatoriedad. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{Sobreajuste y generalización}
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.48\textwidth}
+\thesisimage[width=\linewidth]{15_curvas_loss_overfitting.jpg}{4.4cm}
+\smallsource{15_curvas_loss_overfitting.jpg}
+\column{0.49\textwidth}
+\begin{itemize}
+  \item La pérdida de entrenamiento puede seguir bajando.
+  \item La pérdida de validación puede dejar de mejorar y comenzar a subir.
+  \item Esa brecha indica que la red empieza a capturar detalles que no se transfieren a datos nuevos.
+\end{itemize}
+\vspace{0.2cm}
+\begin{alertblock}{Diagnóstico práctico}
+El sobreajuste se observa cuando mejorar el ajuste al entrenamiento deja de mejorar la validación.
+\end{alertblock}
+\end{columns}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{Regularización: idea general}
+\begin{block}{Definición operativa}
+Regularizar es modificar el aprendizaje para reducir el error de generalización, aunque eso no implique reducir el error de entrenamiento.
+\end{block}
+\vspace{0.3cm}
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.48\textwidth}
+\textbf{Sin regularización}
+\begin{itemize}
+  \item Mayor libertad efectiva.
+  \item Más riesgo de dependencia de patrones frágiles.
+  \item Sobreajuste más visible.
+\end{itemize}
+\column{0.48\textwidth}
+\textbf{Con regularización estocástica}
+\begin{itemize}
+  \item Se perturba la propagación durante entrenamiento.
+  \item La red debe distribuir información de modo más robusto.
+  \item Se busca mejor desempeño fuera de muestra.
+\end{itemize}
+\end{columns}
+\end{frame}
+
+% ------------------------------------------------------------
+\section{Métodos de regularización}
+
+\begin{frame}{Dropout: apagar activaciones}
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.49\textwidth}
+\begin{itemize}
+  \item En cada pasada de entrenamiento, una fracción de activaciones se anula aleatoriamente.
+  \item La perturbación es binaria: cada activación queda activa o apagada.
+  \item La red no puede depender rígidamente de unidades específicas.
+  \item Se interpreta como entrenamiento de muchas subredes implícitas con pesos compartidos.
+\end{itemize}
+\column{0.48\textwidth}
+\thesisimage[width=\linewidth]{dropconnect y dropout/10_inverted_dropout_training.jpg}{3.0cm}
+\vspace{0.2cm}
+\thesisimage[width=\linewidth]{dropconnect y dropout/11_inverted_dropout_inferencia.jpg}{3.0cm}
+\smallsource{dropconnect y dropout/10_inverted_dropout_training.jpg}
+\end{columns}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{DropConnect: apagar conexiones}
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.49\textwidth}
+\begin{itemize}
+  \item La máscara aleatoria actúa sobre pesos individuales, no sobre neuronas completas.
+  \item La activación puede existir, pero algunas conexiones salientes o entrantes se anulan.
+  \item La conectividad efectiva cambia en cada iteración.
+  \item También es una perturbación binaria.
+\end{itemize}
+\column{0.48\textwidth}
+\thesisimage[width=\linewidth]{dropconnect y dropout/12_dropconnect_training.jpg}{3.0cm}
+\vspace{0.2cm}
+\thesisimage[width=\linewidth]{dropconnect y dropout/13_dropconnect_inferencia.jpg}{3.0cm}
+\smallsource{dropconnect y dropout/12_dropconnect_training.jpg}
+\end{columns}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{Dropout vs DropConnect}
+\begin{table}
+\centering
+\begin{tabularx}{0.96\textwidth}{lXXX}
+\toprule
+Método & Qué perturba & Máscara & Intuición \\
+\midrule
+Dropout & Activaciones & Binaria & Apaga neuronas durante entrenamiento. \\
+DropConnect & Pesos/conexiones & Binaria & Apaga enlaces individuales. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\vspace{0.4cm}
+\keymsg{Ambos métodos diluyen estocásticamente la red, pero actúan en niveles distintos de la arquitectura.}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{\bd: idea central}
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.52\textwidth}
+\begin{itemize}
+  \item No apaga necesariamente la señal.
+  \item Modula multiplicativamente la activación.
+  \item Reemplaza ``apagar/conservar'' por ``modificar amplitud''.
+  \item Introduce dos hiperparámetros principales: frecuencia $p$ e intensidad $\lambda$.
+\end{itemize}
+\vspace{0.2cm}
+\begin{block}{Máscara propuesta}
+\[
+ m_j = \begin{cases}
+ 1+\lambda, & \text{con probabilidad } p,\\
+ 1, & \text{con probabilidad } 1-p.
+ \end{cases}
+ \qquad \widetilde h_j = m_j h_j
+\]
+\end{block}
+\column{0.45\textwidth}
+\thesisimage[width=\linewidth]{14_boostdropout_training.jpg}{5.4cm}
+\smallsource{14_boostdropout_training.jpg}
+\end{columns}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{Máscara normalizada y vínculo con Dropout}
+\begin{itemize}
+  \item El valor esperado de la máscara es
+  \[
+    \mathbb{E}[m_j] = 1 + p\lambda.
+  \]
+  \item Si se quiere preservar la escala esperada, puede usarse
+  \[
+    \widehat m_j = \frac{m_j}{1+p\lambda}, \qquad \mathbb{E}[\widehat m_j]=1.
+  \]
+  \item Si $\lambda=-1$, la máscara pasa a ser binaria sobre $\{0,1\}$.
+  \item Con normalización adecuada, ese caso recupera la lógica de \textit{inverted dropout}.
+\end{itemize}
+\begin{alertblock}{Diferencia clave}
+En esta tesis, la configuración seleccionada de \bd{} usa $p=0.7$, $\lambda=0.9$ y máscara no normalizada.
+\end{alertblock}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{Tres métodos en una misma familia}
+\begin{table}
+\centering
+\small
+\begin{tabularx}{0.96\textwidth}{lXXX}
+\toprule
+Método & Nivel de acción & Tipo de perturbación & Lectura conceptual \\
+\midrule
+Dropout & Activaciones & Binaria & Supresión aleatoria de unidades. \\
+DropConnect & Conexiones & Binaria & Supresión aleatoria de pesos. \\
+\bd & Activaciones & No binaria / multiplicativa & Modulación estocástica de amplitud. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\vspace{0.5cm}
+\keymsg{La propuesta conserva la idea de perturbar la red durante entrenamiento, pero amplía el tipo de perturbación posible.}
+\end{frame}
+
+% ------------------------------------------------------------
+\section{Diseño experimental}
+
+\begin{frame}{Objetivo experimental}
+\centering
+{\Large Comparar si \bd{} mejora la generalización frente a una red base y frente a regularizadores clásicos bajo condiciones controladas.}
+\vspace{0.6cm}
+\begin{table}
+\centering
+\begin{tabular}{cccc}
+\ofn & \don & \dcn & \bdn \\
+\midrule
+Sin reg. & Dropout & DropConnect & \bd \\
+\end{tabular}
+\end{table}
+\vspace{0.3cm}
+\begin{block}{Principio de comparación}
+Todas las arquitecturas comparten la misma topología base; cambia únicamente el mecanismo de regularización.
+\end{block}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{Dataset: MNIST y subconjunto controlado}
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.47\textwidth}
+\thesisimage[width=\linewidth]{mnist_ejemplos.jpg}{4.4cm}
+\smallsource{mnist_ejemplos.jpg}
+\column{0.50\textwidth}
+\begin{itemize}
+  \item MNIST: dígitos manuscritos de $0$ a $9$.
+  \item Imágenes de $28\times28$ píxeles.
+  \item Se usa un subconjunto estratificado.
+  \item El subset reduce costo computacional y vuelve visible el sobreajuste.
+\end{itemize}
+\begin{alertblock}{Decisión metodológica}
+El objetivo no fue maximizar el rendimiento absoluto en MNIST, sino estudiar regularización en un escenario controlado.
+\end{alertblock}
+\end{columns}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{Arquitectura base}
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.52\textwidth}
+\begin{block}{Topología común}
+\[
+784 \;\longrightarrow\; 256 \;\longrightarrow\; 256 \;\longrightarrow\; 256 \;\longrightarrow\; 10
+\]
+\end{block}
+\begin{itemize}
+  \item Red densa \textit{feed-forward}.
+  \item Capas ocultas con ReLU.
+  \item Salida de 10 clases.
+  \item Misma arquitectura para los cuatro modelos comparados.
+\end{itemize}
+\column{0.45\textwidth}
+\thesisimage[width=\linewidth]{arquitectura_base_regularizada_limpia.jpg}{5.0cm}
+\smallsource{arquitectura_base_regularizada_limpia.jpg}
+\end{columns}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{Modelos comparados}
+\begin{table}
+\centering
+\begin{tabularx}{0.90\textwidth}{lX}
+\toprule
+Modelo & Descripción \\
+\midrule
+\ofn & Arquitectura base sin regularización estocástica. \\
+\don & Misma arquitectura con Dropout en capas ocultas. \\
+\dcn & Misma arquitectura con DropConnect en capas densas. \\
+\bdn & Misma arquitectura con modulación multiplicativa \bd. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\vspace{0.4cm}
+\keymsg{La comparación se concentra en el mecanismo de regularización, no en cambiar tamaño, profundidad o dataset.}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{Protocolo de entrenamiento}
+\begin{table}
+\centering
+\small
+\begin{tabularx}{0.92\textwidth}{lX}
+\toprule
+Decisión & Uso en el experimento \\
+\midrule
+Optimizador & Adam. \\
+Batch size & $256$. \\
+Activación & ReLU en capas ocultas. \\
+Pérdida & Entropía cruzada para clasificación multiclase. \\
+Validación & Selección de hiperparámetros y artefactos. \\
+Test & Evaluación final reservada. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+\begin{alertblock}{Separación estricta}
+El test no interviene en la búsqueda de hiperparámetros ni en la selección de modelos.
+\end{alertblock}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{Dos fases experimentales}
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.48\textwidth}
+\begin{block}{Fase 1: exploración}
+\begin{itemize}
+  \item Grid search de hiperparámetros.
+  \item Varias semillas.
+  \item Selección por validación.
+\end{itemize}
+\end{block}
+\column{0.48\textwidth}
+\begin{block}{Fase 2: evaluación final}
+\begin{itemize}
+  \item Configuraciones fijadas.
+  \item Entrenamiento multisemilla.
+  \item Reporte en validación y test.
+\end{itemize}
+\end{block}
+\end{columns}
+\vspace{0.4cm}
+\keymsg{La evaluación multisemilla evita que una corrida afortunada defina la conclusión.}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{Criterios de selección: MMV y \textit{early stopping}}
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.48\textwidth}
+\begin{block}{MMV}
+Mejor modelo según pérdida de validación. Permite seleccionar el mínimo observado durante el entrenamiento.
+\end{block}
+\column{0.48\textwidth}
+\begin{block}{Early stopping}
+Artefacto elegido por una política de detención temprana, usando validación como señal.
+\end{block}
+\end{columns}
+\vspace{0.4cm}
+\begin{alertblock}{Por qué usar ambos}
+Comparar ambos criterios permite verificar si la conclusión depende del modo de seleccionar el modelo final.
+\end{alertblock}
+\end{frame}
+
+% ------------------------------------------------------------
+\section{Resultados principales}
+
+\begin{frame}{Configuraciones seleccionadas}
+\begin{table}
+\centering
+\small
+\begin{tabular}{lccc}
+\toprule
+Modelo & $p$ & $\lambda$ & Normalización \\
+\midrule
+\don & 0.5 & -- & -- \\
+\dcn & 0.5 & -- & -- \\
+\bdn & 0.7 & 0.9 & No \\
+\bottomrule
+\end{tabular}
+\end{table}
+\vspace{0.4cm}
+\keymsg{La configuración seleccionada de \bd{} corresponde a una modulación frecuente, positiva y no normalizada.}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{Resultado global: criterio MMV}
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.50\textwidth}
+\thesisimage[width=\linewidth]{imagenes_resultados/entrenamiento_principal/best_model/boxplot_error_test_best_model.jpg}{3.4cm}
+\vspace{0.2cm}
+\thesisimage[width=\linewidth]{imagenes_resultados/entrenamiento_principal/best_model/boxplot_perdida_test_best_model.jpg}{3.4cm}
+\column{0.47\textwidth}
+\begin{table}
+\centering
+\small
+\begin{tabular}{lcc}
+\toprule
+Modelo & Error test & Pérdida test \\
+\midrule
+\ofn & 0.0687 & 0.2311 \\
+\don & 0.0609 & 0.2129 \\
+\dcn & 0.0614 & 0.2133 \\
+\bdn & \alert{0.0480} & \alert{0.1598} \\
+\bottomrule
+\end{tabular}
+\end{table}
+\begin{block}{Lectura}
+Bajo MMV, \bdn{} obtiene menor error y menor pérdida media de test.
+\end{block}
+\end{columns}
+\smallsource{imagenes_resultados/entrenamiento_principal/best_model/boxplot_error_test_best_model.jpg}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{Interpretación del resultado MMV}
+\begin{itemize}
+  \item \ofn{} presenta el peor desempeño: el sobreajuste afecta la generalización.
+  \item \don{} y \dcn{} mejoran respecto de la red base.
+  \item Ambos regularizadores clásicos quedan muy cercanos entre sí.
+  \item \bdn{} desplaza la distribución hacia valores menores de error y pérdida.
+\end{itemize}
+\vspace{0.5cm}
+\keymsg{La mejora de \bdn{} no aparece solo en un valor medio aislado: también se observa en medianas, boxplots y métricas de validación.}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{Resultado global: \textit{early stopping}}
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.50\textwidth}
+\thesisimage[width=\linewidth]{imagenes_resultados/entrenamiento_principal/early_stopping/boxplot_error_test_early_stopping.jpg}{3.4cm}
+\vspace{0.2cm}
+\thesisimage[width=\linewidth]{imagenes_resultados/entrenamiento_principal/early_stopping/boxplot_perdida_test_early_stopping.jpg}{3.4cm}
+\column{0.47\textwidth}
+\begin{table}
+\centering
+\small
+\begin{tabular}{lcc}
+\toprule
+Modelo & Error test & Pérdida test \\
+\midrule
+\ofn & 0.0687 & 0.2310 \\
+\don & 0.0609 & 0.2129 \\
+\dcn & 0.0614 & 0.2133 \\
+\bdn & \alert{0.0491} & \alert{0.1640} \\
+\bottomrule
+\end{tabular}
+\end{table}
+\begin{block}{Lectura}
+El patrón se conserva: \bdn{} sigue siendo el mejor modelo dentro del protocolo.
+\end{block}
+\end{columns}
+\smallsource{imagenes_resultados/entrenamiento_principal/early_stopping/boxplot_error_test_early_stopping.jpg}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{MMV vs \textit{early stopping}}
+\begin{table}
+\centering
+\begin{tabular}{lcc}
+\toprule
+Modelo & Error test MMV & Error test \textit{early stopping} \\
+\midrule
+\ofn & 0.0687 & 0.0687 \\
+\don & 0.0609 & 0.0609 \\
+\dcn & 0.0614 & 0.0614 \\
+\bdn & \alert{0.0480} & \alert{0.0491} \\
+\bottomrule
+\end{tabular}
+\end{table}
+\vspace{0.35cm}
+\begin{itemize}
+  \item La conclusión principal no depende fuertemente del criterio de selección.
+  \item Para \bdn{}, MMV obtiene un resultado levemente mejor.
+  \item Esto sugiere que parte de su ventaja aparece en un régimen más tardío del entrenamiento.
+\end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{Distribución de la mejor época}
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.50\textwidth}
+\thesisimage[width=\linewidth]{imagenes_resultados/entrenamiento_principal/best_model/boxplot_mejor_epoca_best_model.jpg}{3.4cm}
+\vspace{0.2cm}
+\thesisimage[width=\linewidth]{imagenes_resultados/entrenamiento_principal/early_stopping/boxplot_mejor_epoca_early_stopping.jpg}{3.4cm}
+\column{0.47\textwidth}
+\begin{table}
+\centering
+\small
+\begin{tabular}{lcc}
+\toprule
+Modelo & MMV & Early \\
+\midrule
+\ofn & 7.8 & 7.8 \\
+\don & 12.0 & 12.0 \\
+\dcn & 16.3 & 16.3 \\
+\bdn & \alert{43.8} & \alert{29.2} \\
+\bottomrule
+\end{tabular}
+\end{table}
+\begin{block}{Lectura dinámica}
+\bdn{} alcanza sus mejores configuraciones más tarde que las otras arquitecturas.
+\end{block}
+\end{columns}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{Curvas representativas de validación}
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.50\textwidth}
+\thesisimage[width=\linewidth]{imagenes_resultados/entrenamiento_principal/best_model/curva_error_validacion_best_model.jpg}{3.3cm}
+\vspace{0.2cm}
+\thesisimage[width=\linewidth]{imagenes_resultados/entrenamiento_principal/best_model/curva_perdida_validacion_best_model.jpg}{3.3cm}
+\column{0.47\textwidth}
+\begin{itemize}
+  \item \ofn{} muestra deterioro tardío de validación.
+  \item Dropout y DropConnect atenúan ese patrón.
+  \item \bdn{} mantiene una validación más estable en épocas tardías.
+\end{itemize}
+\begin{alertblock}{Resultado cualitativo clave}
+En \bdn{} no se observa el ascenso tardío de pérdida de validación que sí aparece en las otras arquitecturas.
+\end{alertblock}
+\end{columns}
+\smallsource{imagenes_resultados/entrenamiento_principal/best_model/curva_perdida_validacion_best_model.jpg}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{Dependencia con $p$}
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.50\textwidth}
+\thesisimage[width=\linewidth]{imagenes_resultados/graficos_variando_p/comparison_error_test_best_model.jpg}{3.3cm}
+\vspace{0.2cm}
+\thesisimage[width=\linewidth]{imagenes_resultados/graficos_variando_p/comparison_perdida_test_best_model.jpg}{3.3cm}
+\column{0.47\textwidth}
+\begin{itemize}
+  \item $p$ controla la frecuencia de modulación o enmascaramiento.
+  \item \bdn{} muestra una región favorable alrededor de $p=0.7$.
+  \item La mejora no depende de un punto aislado: se mantiene en una zona amplia del rango explorado.
+\end{itemize}
+\begin{block}{Conclusión}
+El valor seleccionado por grid search coincide con el entorno de mejor desempeño al ampliar el análisis.
+\end{block}
+\end{columns}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{Dependencia con $\lambda$}
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.50\textwidth}
+\thesisimage[width=\linewidth]{imagenes_resultados/graficos variando lambda/comparison_lambda_error_test_best_model.jpg}{3.3cm}
+\vspace{0.2cm}
+\thesisimage[width=\linewidth]{imagenes_resultados/graficos variando lambda/comparison_lambda_perdida_test_best_model.jpg}{3.3cm}
+\column{0.47\textwidth}
+\begin{itemize}
+  \item $\lambda$ controla la intensidad de la modulación multiplicativa.
+  \item La región positiva contiene los mejores resultados de \bdn{}.
+  \item Valores negativos, especialmente cerca de $\lambda=-1$ sin normalización, degradan fuertemente el desempeño.
+\end{itemize}
+\begin{alertblock}{Interpretación}
+\bd{} no es simplemente Dropout con otro nombre: $\lambda$ introduce un grado de libertad nuevo y cambia el régimen de comportamiento.
+\end{alertblock}
+\end{columns}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{Conclusión del protocolo principal}
+\begin{enumerate}
+  \item La regularización estocástica mejora sistemáticamente a la red base.
+  \item Dropout y DropConnect reducen el sobreajuste y obtienen resultados similares entre sí.
+  \item \bdn{} supera a las tres arquitecturas de referencia en error y pérdida de test.
+  \item La ventaja se sostiene bajo MMV, \textit{early stopping}, curvas temporales y análisis de sensibilidad.
+\end{enumerate}
+\vspace{0.4cm}
+\keymsg{La modulación multiplicativa no binaria aparece como una estrategia efectiva de regularización en el escenario experimental estudiado.}
+\end{frame}
+
+% ------------------------------------------------------------
+\section{Análisis cualitativo con autoencoders}
+
+\begin{frame}{¿Por qué usar autoencoders?}
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.46\textwidth}
+\thesisimage[width=\linewidth]{15_autoencoder_architecture.jpg}{4.6cm}
+\smallsource{15_autoencoder_architecture.jpg}
+\column{0.51\textwidth}
+\begin{itemize}
+  \item Un autoencoder aprende a reconstruir su entrada.
+  \item Permite observar representaciones internas y características aprendidas.
+  \item En la tesis se usa como análisis complementario, no como benchmark principal.
+\end{itemize}
+\begin{block}{Objetivo}
+Mirar si los mecanismos de regularización producen firmas cualitativas distintas en las representaciones.
+\end{block}
+\end{columns}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{Visualización de coadaptaciones}
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.50\textwidth}
+\thesisimage[width=\linewidth]{imagenes_resultados/autoencoder/OverFitNet/coadaptation.jpg}{3.1cm}
+\vspace{0.1cm}
+\thesisimage[width=\linewidth]{imagenes_resultados/autoencoder/Dropout/coadaptation.jpg}{3.1cm}
+\column{0.47\textwidth}
+\thesisimage[width=\linewidth]{imagenes_resultados/autoencoder/DropConnect/coadaptation.jpg}{3.1cm}
+\vspace{0.1cm}
+\thesisimage[width=\linewidth]{imagenes_resultados/autoencoder/BoostDropout/coadaptation.jpg}{3.1cm}
+\end{columns}
+\vspace{0.15cm}
+\smallsource{imagenes_resultados/autoencoder/*/coadaptation.jpg}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{Decodificaciones desde neuronas latentes individuales}
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.50\textwidth}
+\thesisimage[width=\linewidth]{imagenes_resultados/autoencoder/OverFitNet/single_latent_decodes.jpg}{3.1cm}
+\vspace{0.1cm}
+\thesisimage[width=\linewidth]{imagenes_resultados/autoencoder/Dropout/single_latent_decodes.jpg}{3.1cm}
+\column{0.47\textwidth}
+\thesisimage[width=\linewidth]{imagenes_resultados/autoencoder/DropConnect/single_latent_decodes.jpg}{3.1cm}
+\vspace{0.1cm}
+\thesisimage[width=\linewidth]{imagenes_resultados/autoencoder/BoostDropout/single_latent_decodes.jpg}{3.1cm}
+\end{columns}
+\vspace{0.15cm}
+\smallsource{imagenes_resultados/autoencoder/*/single_latent_decodes.jpg}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{Lectura del análisis cualitativo}
+\begin{itemize}
+  \item Dropout tiende a mostrar detectores más localizados y menor coadaptación visual.
+  \item DropConnect aparece en una posición intermedia.
+  \item \bd{} no replica exactamente la firma visual de Dropout.
+  \item Esto sugiere que la mejora de \bdn{} no debe interpretarse como una versión más intensa de Dropout.
+\end{itemize}
+\vspace{0.4cm}
+\keymsg{\bd{} regulariza, pero probablemente mediante un mecanismo cualitativamente distinto al de la supresión binaria de activaciones.}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{Esparsidad representacional y paramétrica}
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.50\textwidth}
+\textbf{Esparsidad de representaciones}
+\thesisimage[width=\linewidth]{imagenes_resultados/autoencoder/BoostDropout/sparsity.jpg}{2.8cm}
+\vspace{0.25cm}
+\textbf{Esparsidad en primera capa}
+\thesisimage[width=\linewidth]{imagenes_resultados/autoencoder/BoostDropout/first_layer_parameter_sparsity.jpg}{2.8cm}
+\column{0.47\textwidth}
+\begin{itemize}
+  \item Se distinguen dos nociones: activaciones esparsas y pesos esparsos.
+  \item El análisis complementa la comparación cuantitativa.
+  \item No busca reemplazar el resultado principal de clasificación.
+\end{itemize}
+\begin{block}{Uso en la defensa}
+Presentar este bloque como evidencia interpretativa, no como prueba definitiva del mecanismo.
+\end{block}
+\end{columns}
+\end{frame}
+
+% ------------------------------------------------------------
+\section{Alcances, conclusiones y cierre}
+
+\begin{frame}{Alcance de los resultados}
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.48\textwidth}
+\begin{block}{Qué podemos afirmar}
+\begin{itemize}
+  \item En el protocolo estudiado, \bdn{} mejora a la red base.
+  \item Supera a Dropout y DropConnect en las métricas principales.
+  \item Muestra una dinámica de validación más estable.
+\end{itemize}
+\end{block}
+\column{0.48\textwidth}
+\begin{alertblock}{Qué no podemos afirmar}
+\begin{itemize}
+  \item Superioridad universal.
+  \item Validez automática para todas las arquitecturas.
+  \item Generalización directa a todos los datasets o regímenes de entrenamiento.
+\end{itemize}
+\end{alertblock}
+\end{columns}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{Limitaciones metodológicas}
+\begin{itemize}
+  \item Se trabajó con un subconjunto de MNIST.
+  \item La arquitectura fue una red densa \textit{feed-forward} específica.
+  \item La búsqueda de hiperparámetros fue acotada.
+  \item La evaluación fue multisemilla, pero no exhaustiva.
+  \item El análisis con autoencoders fue cualitativo y complementario.
+\end{itemize}
+\vspace{0.4cm}
+\keymsg{Estas limitaciones no debilitan el resultado; delimitan con precisión su alcance.}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{Conclusiones principales}
+\begin{enumerate}
+  \item \textbf{Regularización efectiva:} \bdn{} mejora a \ofn{} y mitiga el sobreajuste en el escenario estudiado.
+  \item \textbf{Comparación favorable:} bajo el protocolo experimental, supera consistentemente a Dropout y DropConnect.
+  \item \textbf{Mecanismo distinto:} su comportamiento sugiere una forma de regularización diferente, no una simple intensificación de Dropout.
+\end{enumerate}
+\vspace{0.5cm}
+\begin{alertblock}{Mensaje de defensa}
+La contribución central es abrir una dirección: estudiar regularización estocástica más allá de la supresión binaria.
+\end{alertblock}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{Trabajo futuro}
+\begin{itemize}
+  \item Evaluar \bd{} en otras arquitecturas: CNNs, redes más profundas, modelos residuales.
+  \item Probar otros datasets y problemas de mayor complejidad.
+  \item Explorar de manera más amplia el espacio de $p$, $\lambda$ y normalización.
+  \item Analizar calibración probabilística y temperature scaling como diagnóstico posterior.
+  \item Estudiar vínculos con física estadística, sistemas complejos y dinámica de perturbaciones multiplicativas.
+\end{itemize}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{Mensaje final}
+\centering
+\vspace{0.4cm}
+{\Large\bfseries Esta tesis propone pensar la regularización no solo como supresión aleatoria, sino como una intervención más general sobre la intensidad de las señales internas de una red neuronal.}
+\vspace{0.8cm}
+
+\thesisimage[width=0.42\linewidth]{14_boostdropout_training.jpg}{3.0cm}
+\vfill
+{\large Muchas gracias.}
+\end{frame}
+
+% ------------------------------------------------------------
+\appendix
+\section{Apéndice}
+
+\begin{frame}{Apéndice: ecuaciones clave de \bd}
+\begin{align*}
+ m_j &= \begin{cases}
+ 1+\lambda, & \text{con probabilidad } p,\\
+ 1, & \text{con probabilidad } 1-p,
+ \end{cases} \\
+ \widetilde h_j &= m_j h_j, \\
+ \mathbb{E}[m_j] &= 1+p\lambda, \\
+ \widehat m_j &= \frac{m_j}{1+p\lambda} \quad \Rightarrow \quad \mathbb{E}[\widehat m_j]=1.
+\end{align*}
+\begin{block}{Caso límite}
+Para $\lambda=-1$, la máscara se vuelve binaria; con normalización adecuada se recupera la lógica de \textit{inverted dropout}.
+\end{block}
+\end{frame}
+
+\begin{frame}{Apéndice: tablas completas de test}
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.49\textwidth}
+\textbf{MMV}
+\begin{table}
+\centering
+\scriptsize
+\begin{tabular}{lccccc}
+\toprule
+Modelo & Media & Mediana & Desv. & Mín. & Máx. \\
+\midrule
+\ofn & .0687 & .0681 & .0023 & .0655 & .0726 \\
+\don & .0609 & .0616 & .0036 & .0547 & .0672 \\
+\dcn & .0614 & .0609 & .0029 & .0555 & .0655 \\
+\bdn & .0480 & .0468 & .0036 & .0442 & .0572 \\
+\bottomrule
+\end{tabular}
+\end{table}
+\column{0.49\textwidth}
+\textbf{Early stopping}
+\begin{table}
+\centering
+\scriptsize
+\begin{tabular}{lccccc}
+\toprule
+Modelo & Media & Mediana & Desv. & Mín. & Máx. \\
+\midrule
+\ofn & .0687 & .0681 & .0023 & .0655 & .0726 \\
+\don & .0609 & .0616 & .0036 & .0547 & .0672 \\
+\dcn & .0614 & .0609 & .0029 & .0555 & .0655 \\
+\bdn & .0491 & .0491 & .0028 & .0451 & .0527 \\
+\bottomrule
+\end{tabular}
+\end{table}
+\end{columns}
+\end{frame}
+
+\end{document}
