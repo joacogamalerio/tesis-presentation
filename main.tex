@@ -51,14 +51,13 @@
   \IfFileExists{#2}{\includegraphics[#1]{#2}}{%
     \begin{center}
     \fbox{\begin{minipage}[c][#3][c]{0.92\linewidth}
-      \centering\small\textbf{Imagen pendiente}\par\vspace{0.5em}
-      \ttfamily\detokenize{#2}
+      \centering\small\textbf{Imagen pendiente}
     \end{minipage}}
     \end{center}}
 }
 
 \newcommand{\keymsg}[1]{\begin{block}{Mensaje central}\large #1\end{block}}
-\newcommand{\smallsource}[1]{\vspace{0.3em}{\scriptsize\color{gray}Imagen sugerida de la tesis: \texttt{\detokenize{#1}}}}
+\newcommand{\smallsource}[1]{}
 \newcommand{\model}[1]{\textit{#1}}
 \newcommand{\bd}{\model{BoostDropout}}
 \newcommand{\bdn}{\model{BoostDropoutNet}}
@@ -162,24 +161,27 @@ Modelo & Regularización \\
 
 % ------------------------------------------------------------
 \begin{frame}{Redes \textit{feed-forward}: de una unidad a muchas capas}
+\vspace{0.05cm}
 \begin{columns}[T,totalwidth=\textwidth]
 \column{0.47\textwidth}
-\textbf{Perceptrón simple}
-\thesisimage[width=\linewidth]{01_perceptron_simple.jpg}{4.1cm}
+\centering
+\textbf{Perceptrón simple}\par\vspace{0.05cm}
+\thesisimage[width=\linewidth,height=5.25cm,keepaspectratio]{01_perceptron_simple.jpg}{4.1cm}
 \smallsource{01_perceptron_simple.jpg}
 \column{0.50\textwidth}
-\textbf{Perceptrón multicapa}
-\thesisimage[width=\linewidth]{02_perceptron_multicapa.jpg}{4.1cm}
+\centering
+\textbf{Perceptrón multicapa}\par\vspace{0.05cm}
+\thesisimage[width=\linewidth,height=5.25cm,keepaspectratio]{02_perceptron_multicapa.jpg}{4.1cm}
 \smallsource{02_perceptron_multicapa.jpg}
 \end{columns}
-\vspace{0.2cm}
+\vspace{-0.10cm}
 \keymsg{Una red \textit{feed-forward} compone transformaciones capa por capa: entrada $\rightarrow$ representaciones internas $\rightarrow$ salida.}
 \end{frame}
 
 % ------------------------------------------------------------
 \begin{frame}{Clasificación supervisada en MNIST}
 \begin{columns}[T,totalwidth=\textwidth]
-\column{0.52\textwidth}
+\column{0.42\textwidth}
 \begin{itemize}
   \item Entrada: imagen de $28\times28$ píxeles, vectorizada en $784$ componentes.
   \item Salida: una clase entre $0$ y $9$.
@@ -237,21 +239,20 @@ Múltiples semillas & Control de variabilidad por inicialización y aleatoriedad
 
 % ------------------------------------------------------------
 \begin{frame}{Sobreajuste y generalización}
+\small
 \begin{columns}[T,totalwidth=\textwidth]
-\column{0.48\textwidth}
-\thesisimage[width=\linewidth]{15_curvas_loss_overfitting.jpg}{4.4cm}
-\smallsource{15_curvas_loss_overfitting.jpg}
-\column{0.49\textwidth}
+\column{0.35\textwidth}
+\vspace{0.25cm}
 \begin{itemize}
   \item La pérdida de entrenamiento puede seguir bajando.
   \item La pérdida de validación puede dejar de mejorar y comenzar a subir.
   \item Esa brecha indica que la red empieza a capturar detalles que no se transfieren a datos nuevos.
 \end{itemize}
-\vspace{0.2cm}
-\begin{alertblock}{Diagnóstico práctico}
-El sobreajuste se observa cuando mejorar el ajuste al entrenamiento deja de mejorar la validación.
-\end{alertblock}
+\column{0.62\textwidth}
+\centering
+\thesisimage[width=\linewidth,height=0.72\textheight,keepaspectratio]{15_curvas_loss_overfitting.jpg}{5.4cm}
 \end{columns}
+\smallsource{15_curvas_loss_overfitting.jpg}
 \end{frame}
 
 % ------------------------------------------------------------
@@ -283,17 +284,19 @@ Regularizar es modificar el aprendizaje para reducir el error de generalización
 
 \begin{frame}{Dropout: apagar activaciones}
 \begin{columns}[T,totalwidth=\textwidth]
-\column{0.49\textwidth}
+\column{0.47\textwidth}
+\small
 \begin{itemize}
   \item En cada pasada de entrenamiento, una fracción de activaciones se anula aleatoriamente.
   \item La perturbación es binaria: cada activación queda activa o apagada.
   \item La red no puede depender rígidamente de unidades específicas.
   \item Se interpreta como entrenamiento de muchas subredes implícitas con pesos compartidos.
 \end{itemize}
-\column{0.48\textwidth}
-\thesisimage[width=\linewidth]{dropconnect y dropout/10_inverted_dropout_training.jpg}{3.0cm}
-\vspace{0.2cm}
-\thesisimage[width=\linewidth]{dropconnect y dropout/11_inverted_dropout_inferencia.jpg}{3.0cm}
+\column{0.50\textwidth}
+\vfill
+\begin{center}
+\thesisimage[width=\linewidth,height=0.62\textheight,keepaspectratio]{dropconnect y dropout/10_inverted_dropout_training.jpg}{4.6cm}
+\end{center}
 \smallsource{dropconnect y dropout/10_inverted_dropout_training.jpg}
 \end{columns}
 \end{frame}
@@ -301,60 +304,50 @@ Regularizar es modificar el aprendizaje para reducir el error de generalización
 % ------------------------------------------------------------
 \begin{frame}{DropConnect: apagar conexiones}
 \begin{columns}[T,totalwidth=\textwidth]
-\column{0.49\textwidth}
+\column{0.47\textwidth}
+\small
 \begin{itemize}
   \item La máscara aleatoria actúa sobre pesos individuales, no sobre neuronas completas.
   \item La activación puede existir, pero algunas conexiones salientes o entrantes se anulan.
   \item La conectividad efectiva cambia en cada iteración.
   \item También es una perturbación binaria.
 \end{itemize}
-\column{0.48\textwidth}
-\thesisimage[width=\linewidth]{dropconnect y dropout/12_dropconnect_training.jpg}{3.0cm}
-\vspace{0.2cm}
-\thesisimage[width=\linewidth]{dropconnect y dropout/13_dropconnect_inferencia.jpg}{3.0cm}
+\column{0.50\textwidth}
+\vfill
+\begin{center}
+\thesisimage[width=\linewidth,height=0.62\textheight,keepaspectratio]{dropconnect y dropout/12_dropconnect_training.jpg}{4.6cm}
+\end{center}
 \smallsource{dropconnect y dropout/12_dropconnect_training.jpg}
 \end{columns}
 \end{frame}
 
 % ------------------------------------------------------------
-\begin{frame}{Dropout vs DropConnect}
-\begin{table}
-\centering
-\begin{tabularx}{0.96\textwidth}{lXXX}
-\toprule
-Método & Qué perturba & Máscara & Intuición \\
-\midrule
-Dropout & Activaciones & Binaria & Apaga neuronas durante entrenamiento. \\
-DropConnect & Pesos/conexiones & Binaria & Apaga enlaces individuales. \\
-\bottomrule
-\end{tabularx}
-\end{table}
-\vspace{0.4cm}
-\keymsg{Ambos métodos diluyen estocásticamente la red, pero actúan en niveles distintos de la arquitectura.}
-\end{frame}
-
-% ------------------------------------------------------------
 \begin{frame}{\bd: idea central}
 \begin{columns}[T,totalwidth=\textwidth]
-\column{0.52\textwidth}
+\column{0.47\textwidth}
+\small
 \begin{itemize}
   \item No apaga necesariamente la señal.
   \item Modula multiplicativamente la activación.
   \item Reemplaza ``apagar/conservar'' por ``modificar amplitud''.
   \item Introduce dos hiperparámetros principales: frecuencia $p$ e intensidad $\lambda$.
 \end{itemize}
-\vspace{0.2cm}
+\vspace{0.15cm}
 \begin{block}{Máscara propuesta}
+\scriptsize
 \[
  m_j = \begin{cases}
  1+\lambda, & \text{con probabilidad } p,\\
- 1, & \text{con probabilidad } 1-p.
+ 1, & \text{con probabilidad } 1-p,
  \end{cases}
  \qquad \widetilde h_j = m_j h_j
 \]
 \end{block}
-\column{0.45\textwidth}
-\thesisimage[width=\linewidth]{14_boostdropout_training.jpg}{5.4cm}
+\column{0.50\textwidth}
+\vfill
+\begin{center}
+\thesisimage[width=\linewidth,height=0.62\textheight,keepaspectratio]{14_boostdropout_training.jpg}{4.6cm}
+\end{center}
 \smallsource{14_boostdropout_training.jpg}
 \end{columns}
 \end{frame}
@@ -394,7 +387,7 @@ DropConnect & Conexiones & Binaria & Supresión aleatoria de pesos. \\
 \end{tabularx}
 \end{table}
 \vspace{0.5cm}
-\keymsg{La propuesta conserva la idea de perturbar la red durante entrenamiento, pero amplía el tipo de perturbación posible.}
+\keymsg{Los tres métodos pertenecen a una misma familia de dilución estocástica: perturban la red durante entrenamiento, pero en distintos niveles y con distintas máscaras.}
 \end{frame}
 
 % ------------------------------------------------------------
@@ -440,20 +433,15 @@ El objetivo no fue maximizar el rendimiento absoluto en MNIST, sino estudiar reg
 % ------------------------------------------------------------
 \begin{frame}{Arquitectura base}
 \begin{columns}[T,totalwidth=\textwidth]
-\column{0.52\textwidth}
-\begin{block}{Topología común}
-\[
-784 \;\longrightarrow\; 256 \;\longrightarrow\; 256 \;\longrightarrow\; 256 \;\longrightarrow\; 10
-\]
-\end{block}
+\column{0.42\textwidth}
 \begin{itemize}
   \item Red densa \textit{feed-forward}.
   \item Capas ocultas con ReLU.
   \item Salida de 10 clases.
   \item Misma arquitectura para los cuatro modelos comparados.
 \end{itemize}
-\column{0.45\textwidth}
-\thesisimage[width=\linewidth]{arquitectura_base_regularizada_limpia.jpg}{5.0cm}
+\column{0.55\textwidth}
+\thesisimage[width=\linewidth,height=0.72\textheight,keepaspectratio]{arquitectura_base_regularizada_limpia.jpg}{6.0cm}
 \smallsource{arquitectura_base_regularizada_limpia.jpg}
 \end{columns}
 \end{frame}
@@ -565,30 +553,34 @@ Modelo & $p$ & $\lambda$ & Normalización \\
 
 % ------------------------------------------------------------
 \begin{frame}{Resultado global: criterio MMV}
-\begin{columns}[T,totalwidth=\textwidth]
+\vspace{0.15cm}
+\begin{columns}[c,totalwidth=\textwidth]
 \column{0.50\textwidth}
-\thesisimage[width=\linewidth]{imagenes_resultados/entrenamiento_principal/best_model/boxplot_error_test_best_model.jpg}{3.4cm}
-\vspace{0.2cm}
-\thesisimage[width=\linewidth]{imagenes_resultados/entrenamiento_principal/best_model/boxplot_perdida_test_best_model.jpg}{3.4cm}
-\column{0.47\textwidth}
-\begin{table}
 \centering
-\small
-\begin{tabular}{lcc}
-\toprule
-Modelo & Error test & Pérdida test \\
-\midrule
-\ofn & 0.0687 & 0.2311 \\
-\don & 0.0609 & 0.2129 \\
-\dcn & 0.0614 & 0.2133 \\
-\bdn & \alert{0.0480} & \alert{0.1598} \\
-\bottomrule
-\end{tabular}
-\end{table}
-\begin{block}{Lectura}
-Bajo MMV, \bdn{} obtiene menor error y menor pérdida media de test.
-\end{block}
+\textbf{Error de test}\par\vspace{0.05cm}
+\thesisimage[width=\linewidth,height=0.72\textheight,keepaspectratio]{imagenes_resultados/entrenamiento_principal/best_model/boxplot_error_test_best_model.jpg}{6.0cm}
+\column{0.50\textwidth}
+\centering
+\textbf{Pérdida de test}\par\vspace{0.05cm}
+\thesisimage[width=\linewidth,height=0.72\textheight,keepaspectratio]{imagenes_resultados/entrenamiento_principal/best_model/boxplot_perdida_test_best_model.jpg}{6.0cm}
 \end{columns}
+% \begin{table}
+% \centering
+% \small
+% \begin{tabular}{lcc}
+% \toprule
+% Modelo & Error test & Pérdida test \\
+% \midrule
+% \ofn & 0.0687 & 0.2311 \\
+% \don & 0.0609 & 0.2129 \\
+% \dcn & 0.0614 & 0.2133 \\
+% \bdn & \alert{0.0480} & \alert{0.1598} \\
+% \bottomrule
+% \end{tabular}
+% \end{table}
+% \begin{block}{Lectura}
+% Bajo MMV, \bdn{} obtiene menor error y menor pérdida media de test.
+% \end{block}
 \smallsource{imagenes_resultados/entrenamiento_principal/best_model/boxplot_error_test_best_model.jpg}
 \end{frame}
 
@@ -776,33 +768,31 @@ Mirar si los mecanismos de regularización producen firmas cualitativas distinta
 
 % ------------------------------------------------------------
 \begin{frame}{Visualización de coadaptaciones}
-\begin{columns}[T,totalwidth=\textwidth]
-\column{0.50\textwidth}
-\thesisimage[width=\linewidth]{imagenes_resultados/autoencoder/OverFitNet/coadaptation.jpg}{3.1cm}
 \vspace{0.1cm}
-\thesisimage[width=\linewidth]{imagenes_resultados/autoencoder/Dropout/coadaptation.jpg}{3.1cm}
-\column{0.47\textwidth}
-\thesisimage[width=\linewidth]{imagenes_resultados/autoencoder/DropConnect/coadaptation.jpg}{3.1cm}
-\vspace{0.1cm}
-\thesisimage[width=\linewidth]{imagenes_resultados/autoencoder/BoostDropout/coadaptation.jpg}{3.1cm}
-\end{columns}
-\vspace{0.15cm}
+\centering
+\setlength{\tabcolsep}{0.02cm}
+\renewcommand{\arraystretch}{0}
+\begin{tabular}{cc}
+\thesisimage[width=0.50\textwidth,height=0.445\textheight,keepaspectratio]{imagenes_resultados/autoencoder/OverFitNet/coadaptation.jpg}{3.0cm} &
+\thesisimage[width=0.50\textwidth,height=0.445\textheight,keepaspectratio]{imagenes_resultados/autoencoder/Dropout/coadaptation.jpg}{3.0cm} \\
+\thesisimage[width=0.50\textwidth,height=0.445\textheight,keepaspectratio]{imagenes_resultados/autoencoder/DropConnect/coadaptation.jpg}{3.0cm} &
+\thesisimage[width=0.50\textwidth,height=0.445\textheight,keepaspectratio]{imagenes_resultados/autoencoder/BoostDropout/coadaptation.jpg}{3.0cm}
+\end{tabular}
 \smallsource{imagenes_resultados/autoencoder/*/coadaptation.jpg}
 \end{frame}
 
 % ------------------------------------------------------------
 \begin{frame}{Decodificaciones desde neuronas latentes individuales}
-\begin{columns}[T,totalwidth=\textwidth]
-\column{0.50\textwidth}
-\thesisimage[width=\linewidth]{imagenes_resultados/autoencoder/OverFitNet/single_latent_decodes.jpg}{3.1cm}
 \vspace{0.1cm}
-\thesisimage[width=\linewidth]{imagenes_resultados/autoencoder/Dropout/single_latent_decodes.jpg}{3.1cm}
-\column{0.47\textwidth}
-\thesisimage[width=\linewidth]{imagenes_resultados/autoencoder/DropConnect/single_latent_decodes.jpg}{3.1cm}
-\vspace{0.1cm}
-\thesisimage[width=\linewidth]{imagenes_resultados/autoencoder/BoostDropout/single_latent_decodes.jpg}{3.1cm}
-\end{columns}
-\vspace{0.15cm}
+\centering
+\setlength{\tabcolsep}{0.02cm}
+\renewcommand{\arraystretch}{0}
+\begin{tabular}{cc}
+\thesisimage[width=0.50\textwidth,height=0.445\textheight,keepaspectratio]{imagenes_resultados/autoencoder/OverFitNet/single_latent_decodes.jpg}{3.0cm} &
+\thesisimage[width=0.50\textwidth,height=0.445\textheight,keepaspectratio]{imagenes_resultados/autoencoder/Dropout/single_latent_decodes.jpg}{3.0cm} \\
+\thesisimage[width=0.50\textwidth,height=0.445\textheight,keepaspectratio]{imagenes_resultados/autoencoder/DropConnect/single_latent_decodes.jpg}{3.0cm} &
+\thesisimage[width=0.50\textwidth,height=0.445\textheight,keepaspectratio]{imagenes_resultados/autoencoder/BoostDropout/single_latent_decodes.jpg}{3.0cm}
+\end{tabular}
 \smallsource{imagenes_resultados/autoencoder/*/single_latent_decodes.jpg}
 \end{frame}
 
@@ -969,3 +959,4 @@ Modelo & Media & Mediana & Desv. & Mín. & Máx. \\
 \end{frame}
 
 \end{document}
+
