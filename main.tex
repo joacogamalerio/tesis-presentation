@@ -122,22 +122,44 @@
 \end{frame}
 
 % ------------------------------------------------------------
-\begin{frame}{Redes \textit{feed-forward}: de una unidad a muchas capas}
-\vspace{0.05cm}
+% ------------------------------------------------------------
+\begin{frame}{Perceptrón simple}
 \begin{columns}[T,totalwidth=\textwidth]
-\column{0.47\textwidth}
+\column{0.32\textwidth}
+\begin{itemize}
+  \item Una neurona artificial recibe varios números de entrada.
+  \item A cada entrada le asigna una importancia, llamada peso.
+  \item Combina esas entradas y produce una salida.
+  \item Esa salida puede interpretarse como una decisión simple.
+\end{itemize}
+
+\column{0.64\textwidth}
 \centering
-\textbf{Perceptrón simple}\par\vspace{0.05cm}
-\thesisimage[width=\linewidth,height=5.25cm,keepaspectratio]{01_perceptron_simple.jpg}{4.1cm}
-\smallsource{01_perceptron_simple.jpg}
-\column{0.50\textwidth}
-\centering
-\textbf{Perceptrón multicapa}\par\vspace{0.05cm}
-\thesisimage[width=\linewidth,height=5.25cm,keepaspectratio]{02_perceptron_multicapa.jpg}{4.1cm}
-\smallsource{02_perceptron_multicapa.jpg}
+\thesisimage[width=\linewidth,height=6.8cm,keepaspectratio]{01_perceptron_simple.jpg}{5.8cm}
 \end{columns}
-\vspace{-0.10cm}
-\keymsg{Una red \textit{feed-forward} compone transformaciones capa por capa: entrada $\rightarrow$ representaciones internas $\rightarrow$ salida.}
+
+\vspace{0.2cm}
+\begin{block}{Idea}
+Una neurona transforma información de entrada en una señal de salida.
+\end{block}
+\end{frame}
+
+% ------------------------------------------------------------
+\begin{frame}{Redes \textit{feed-forward}}
+\begin{columns}[T,totalwidth=\textwidth]
+\column{0.32\textwidth}
+\begin{itemize}
+  \item Una red combina muchas neuronas organizadas en capas.
+  \item La información avanza en una dirección: entrada, capas intermedias y salida.
+  \item Las capas intermedias construyen representaciones cada vez más útiles.
+  \item La predicción final se obtiene a partir de la última capa.
+\end{itemize}
+
+\column{0.64\textwidth}
+\centering
+\thesisimage[width=\linewidth,height=6.25cm,keepaspectratio]{02_perceptron_multicapa.jpg}{5.4cm}
+\vspace{0.05cm}
+\end{columns}
 \end{frame}
 
 % ------------------------------------------------------------
