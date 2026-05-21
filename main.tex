@@ -123,101 +123,98 @@
 
 % ------------------------------------------------------------
 % ------------------------------------------------------------
-\begin{frame}{Perceptrón simple}
+\begin{frame}{De una neurona a una red \textit{feed-forward}}
 \begin{columns}[T,totalwidth=\textwidth]
-\column{0.32\textwidth}
+\column{0.48\textwidth}
+\centering
+\textbf{Perceptrón simple}\par\vspace{0.1cm}
+\thesisimage[width=\linewidth,height=5.4cm,keepaspectratio]{01_perceptron_simple.jpg}{4.8cm}
+
+\column{0.48\textwidth}
+\centering
+\textbf{Red \textit{feed-forward}}\par\vspace{0.1cm}
+\thesisimage[width=\linewidth,height=5.4cm,keepaspectratio]{02_perceptron_multicapa.jpg}{4.8cm}
+\end{columns}
+
+\vspace{0.25cm}
+\begin{block}{Idea}
+Una neurona transforma información de entrada en una señal de salida.
+\end{block}
+\note{
 \begin{itemize}
   \item Una neurona artificial recibe varios números de entrada.
   \item A cada entrada le asigna una importancia, llamada peso.
   \item Combina esas entradas y produce una salida.
-  \item Esa salida puede interpretarse como una decisión simple.
-\end{itemize}
-
-\column{0.64\textwidth}
-\centering
-\thesisimage[width=\linewidth,height=6.8cm,keepaspectratio]{01_perceptron_simple.jpg}{5.8cm}
-\end{columns}
-
-\vspace{0.2cm}
-\begin{block}{Idea}
-Una neurona transforma información de entrada en una señal de salida.
-\end{block}
-\end{frame}
-
-% ------------------------------------------------------------
-\begin{frame}{Redes \textit{feed-forward}}
-\begin{columns}[T,totalwidth=\textwidth]
-\column{0.32\textwidth}
-\begin{itemize}
+  \item Esa salida puede interpretarse como una decisión o predicción del modelo.
   \item Una red combina muchas neuronas organizadas en capas.
   \item La información avanza en una dirección: entrada, capas intermedias y salida.
-  \item Las capas intermedias construyen representaciones cada vez más útiles.
+  \item Cada neurona combina sus entradas y luego aplica una función de activación.
   \item La predicción final se obtiene a partir de la última capa.
 \end{itemize}
+}
+\end{frame}
 
-\column{0.64\textwidth}
+% ------------------------------------------------------------
+\begin{frame}{Diagrama de entrenamiento}
 \centering
-\thesisimage[width=\linewidth,height=6.25cm,keepaspectratio]{02_perceptron_multicapa.jpg}{5.4cm}
-\vspace{0.05cm}
-\end{columns}
-\end{frame}
+\resizebox{0.82\textwidth}{!}{%
+\begin{tikzpicture}[node distance=1.45cm, every node/.style={font=\small}]
+\node[draw, rounded corners, fill=softgray, minimum width=2.3cm, minimum height=0.85cm] (train) {Entrenamiento};
+\node[draw, rounded corners, fill=softgray, right of=train, xshift=1.55cm, minimum width=2.2cm, minimum height=0.85cm] (pred) {Predicción};
+\node[draw, rounded corners, fill=softgray, right of=pred, xshift=1.55cm, minimum width=2.0cm, minimum height=0.85cm] (loss) {Pérdida};
+\node[draw, rounded corners, fill=softgray, below of=loss, yshift=-0.15cm, minimum width=2.4cm, minimum height=0.85cm] (grad) {Gradientes};
+\node[draw, rounded corners, fill=softgray, left of=grad, xshift=-1.55cm, minimum width=2.5cm, minimum height=0.85cm] (upd) {Actualizar pesos};
 
-% ------------------------------------------------------------
-\begin{frame}{Conceptos Básicos}
-\begin{columns}[T,totalwidth=\textwidth]
-\column{0.48\textwidth}
-\begin{itemize}
-  \item \textbf{Función de activación:} introduce no linealidad; en este trabajo se usa ReLU en las capas ocultas.
-  \item \textbf{Funciones de pérdida:} miden el error que se busca minimizar; para clasificación se usa entropía cruzada.
-  \item \textbf{Optimizadores:} actualizan los pesos a partir de los gradientes; en los experimentos se usa Adam.
-\end{itemize}
-\column{0.48\textwidth}
-\begin{itemize}
-  \item \textbf{Entrenamiento:} datos usados para ajustar los parámetros.
-  \item \textbf{Validación/test:} datos separados para selección y evaluación final.
-  \item \textbf{Early stopping:} detiene o selecciona el modelo antes de sobreajustar.
-\end{itemize}
-\end{columns}
-\end{frame}
+\node[draw, rounded corners, fill=softgray, below of=train, yshift=-1.20cm, minimum width=2.3cm, minimum height=0.85cm] (val) {Validación};
+\node[draw, rounded corners, fill=softgray, right of=val, xshift=1.55cm, minimum width=2.2cm, minimum height=0.85cm] (sel) {Elegir modelo};
+\node[draw, rounded corners, fill=softgray, right of=sel, xshift=1.55cm, minimum width=2.0cm, minimum height=0.85cm] (test) {Test final};
 
-% ------------------------------------------------------------
-\begin{frame}{Clasificación supervisada en MNIST}
-\begin{columns}[T,totalwidth=\textwidth]
-\column{0.42\textwidth}
-\begin{itemize}
-  \item Entrada: imagen de $28\times28$ píxeles, vectorizada en $784$ componentes.
-  \item Salida: una clase entre $0$ y $9$.
-  \item La red produce \textit{logits}; la decisión final se toma por la clase de mayor puntaje.
-  \item La pérdida usada es entropía cruzada.
-\end{itemize}
-\column{0.45\textwidth}
-\thesisimage[width=\linewidth]{mnist_ejemplos.jpg}{4.4cm}
-\smallsource{mnist_ejemplos.jpg}
-\end{columns}
-\end{frame}
-
-% ------------------------------------------------------------
-\begin{frame}{Entrenamiento de la red}
-\centering
-\begin{tikzpicture}[node distance=1.5cm, every node/.style={font=\small}]
-\node[draw, rounded corners, fill=softgray, minimum width=2.2cm, minimum height=0.9cm] (x) {Entrada};
-\node[draw, rounded corners, fill=softgray, right of=x, xshift=1.6cm, minimum width=2.3cm, minimum height=0.9cm] (pred) {Predicción};
-\node[draw, rounded corners, fill=softgray, right of=pred, xshift=1.8cm, minimum width=2.2cm, minimum height=0.9cm] (loss) {Pérdida};
-\node[draw, rounded corners, fill=softgray, below of=loss, yshift=-0.2cm, minimum width=2.6cm, minimum height=0.9cm] (grad) {Gradientes};
-\node[draw, rounded corners, fill=softgray, left of=grad, xshift=-1.8cm, minimum width=2.7cm, minimum height=0.9cm] (upd) {Actualizar pesos};
-\draw[->, thick] (x) -- (pred);
+\draw[->, thick] (train) -- (pred);
 \draw[->, thick] (pred) -- (loss);
 \draw[->, thick] (loss) -- (grad);
 \draw[->, thick] (grad) -- (upd);
-\draw[->, thick] (upd.west) to[out=180,in=-90] (x.south);
+\draw[->, thick] (upd.west) to[out=180,in=-90] (train.south);
+
+\draw[->, thick] (val) -- (sel);
+\draw[->, thick] (sel) -- (test);
+\draw[->, thick, dashed] (train) -- (val);
 \end{tikzpicture}
-\vspace{0.5cm}
+}
+
+\vspace{0.2cm}
+\begin{block}{Resumen}
+Entrenamiento ajusta los pesos. Validación ayuda a elegir hiperparámetros de entrenamiento.
+Test se usa solo al final para evaluar datos no vistos.
+\end{block}
+\note{
 \begin{itemize}
-  \item La retropropagación calcula gradientes aplicando regla de la cadena.
-  \item Adam actualiza parámetros de manera adaptativa.
-  \item La validación permite seleccionar modelos sin tocar el conjunto de test.
+  \item La red aprende usando un conjunto de entrenamiento.
+  \item Para cada ejemplo, hace una predicción y la compara con la respuesta correcta.
+  \item Esa comparación se mide con una función de pérdida.
+  \item La retropropagación calcula gradientes.
+  \item El optimizador, por ejemplo descenso por el gradiente o Adam, actualiza los pesos para reducir la pérdida.
+  \item El conjunto de validación se usa durante el entrenamiento para elegir hiperparámetros y seleccionar modelos.
+  \item El conjunto de test se reserva hasta el final para medir el desempeño definitivo.
 \end{itemize}
+}
 \end{frame}
+
+% ------------------------------------------------------------
+%\begin{frame}{Clasificación supervisada en MNIST}
+%\begin{columns}[T,totalwidth=\textwidth]
+%\column{0.42\textwidth}
+%\begin{itemize}
+%  \item Como ejemplo de tarea, usamos MNIST: imágenes de dígitos manuscritos.
+%  \item La entrada es una imagen de $28\times28$ píxeles.
+ % \item La salida esperada es una clase entre $0$ y $9$.
+  %\item La red asigna un puntaje a cada dígito posible.
+  %\item La predicción final es el dígito con mayor puntaje.
+%\end{itemize}
+
+%\column{0.45\textwidth}
+%\thesisimage[width=\linewidth]{mnist_ejemplos.jpg}{4.4cm}
+%\end{columns}
+%\end{frame}
 
 % ------------------------------------------------------------
 \begin{frame}{Sobreajuste y generalización}
@@ -225,241 +222,192 @@ Una neurona transforma información de entrada en una señal de salida.
 \begin{columns}[T,totalwidth=\textwidth]
 \column{0.35\textwidth}
 \vspace{0.25cm}
+Sobreajuste:
 \begin{itemize}
-  \item La pérdida de entrenamiento puede seguir bajando.
-  \item La pérdida de validación puede dejar de mejorar y comenzar a subir.
-  \item Esa brecha indica que la red empieza a capturar detalles que no se transfieren a datos nuevos.
+  \item Hay sobreajuste cuando el \textbf{error de test} es muy alto comparado con el \textbf{error de entrenamiento}
+\end{itemize}
+Diagnóstico temprano:
+\begin{itemize}
+  \item La \textbf{pérdida de entrenamiento} puede seguir bajando.
+  \item La \textbf{pérdida de validación} puede dejar de mejorar y comenzar a subir.
 \end{itemize}
 \column{0.62\textwidth}
 \centering
 \thesisimage[width=\linewidth,height=0.72\textheight,keepaspectratio]{15_curvas_loss_overfitting.jpg}{5.4cm}
 \end{columns}
 \smallsource{15_curvas_loss_overfitting.jpg}
+
+\note{
+\begin{itemize}
+  \item Explicar qué significa error de entrenamiento y test, ya que usaremos esa métrica en los resultados
+  \item Remarcar que el sobreajuste aparece cuando el error de entrenamiento es bajo, pero el error de test es alto.
+  \item Usar la figura para explicar la pérdida de entrenamiento: puede seguir bajando porque la red ajusta cada vez mejor los datos conocidos.
+  \item Usar la figura para explicar la pérdida de validación: si deja de bajar y empieza a subir, indica que el modelo empieza a perder capacidad de generalizar.
+\end{itemize}
+}
 \end{frame}
 
 % ------------------------------------------------------------
-\begin{frame}{Regularización: idea general}
-\begin{block}{Definición operativa}
-Regularizar es modificar el aprendizaje para reducir el error de generalización, aunque eso no implique reducir el error de entrenamiento.
-\end{block}
-\vspace{0.3cm}
-\begin{columns}[T,totalwidth=\textwidth]
-\column{0.48\textwidth}
-\textbf{Sin regularización}
+\begin{frame}{Regularización}
+\begin{center}
+{\fontsize{28}{32}\bfseries ¿Qué es la regularización?}
+
+\vspace{0.65cm}
+{\fontsize{18}{22}\bfseries ¿Qué entendemos por dilución y perturbación en el entrenamiento?}
+\end{center}
+\note{
 \begin{itemize}
-  \item Mayor libertad efectiva.
-  \item Más riesgo de dependencia de patrones frágiles.
-  \item Sobreajuste más probable.
+  \item Regularizar es modificar el aprendizaje para reducir el error de test, aunque eso no implique reducir el error de entrenamiento.
+  \item Usar como disparadores las ideas de dilución, penalización y perturbación.
+  \item Sin regularización, la red tiene mayor libertad efectiva y más riesgo de depender de patrones frágiles.
+  \item Ese exceso de libertad puede aumentar el sobreajuste.
+  \item Con regularización estocástica, perturbamos la propagación durante entrenamiento.
+  \item La idea es obligar a la red a distribuir información de manera más robusta.
+  \item El objetivo final es mejorar el desempeño en datos nuevos, no necesariamente minimizar más el error de entrenamiento.
+  \item La dilución es una perturbación binaria.
 \end{itemize}
-\column{0.48\textwidth}
-\textbf{Con regularización estocástica}
-\begin{itemize}
-  \item Se perturba la propagación durante entrenamiento.
-  \item La red debe distribuir información de modo más robusto.
-  \item Se busca mejor desempeño en datos nuevos.
-\end{itemize}
-\end{columns}
+}
 \end{frame}
 
 % ------------------------------------------------------------
 \section{Métodos de regularización}
 
-\begin{frame}{Dropout: apagar activaciones}
+\begin{frame}{Dropout y DropConnect: dilución aleatoria}
 \begin{columns}[T,totalwidth=\textwidth]
-\column{0.47\textwidth}
-\small
-\begin{itemize}
-  \item En cada iteración del entrenamiento, una fracción de activaciones se anula aleatoriamente.
-  \item La perturbación es binaria: cada activación queda activa o apagada.
-  \item La red no puede depender rígidamente de unidades específicas.
-  \item Se interpreta como entrenamiento de muchas subredes implícitas con pesos compartidos.
-\end{itemize}
-\column{0.50\textwidth}
-\vfill
-\begin{center}
-\thesisimage[width=\linewidth,height=0.62\textheight,keepaspectratio]{dropconnect y dropout/10_inverted_dropout_training.jpg}{4.6cm}
-\end{center}
-\smallsource{dropconnect y dropout/10_inverted_dropout_training.jpg}
-\end{columns}
-\end{frame}
+\column{0.48\textwidth}
+\centering
+\textbf{Dropout}\par\vspace{0.1cm}
+\thesisimage[width=\linewidth,height=0.58\textheight,keepaspectratio,trim=0 0 0 1.25cm,clip]{dropconnect y dropout/10_inverted_dropout_training.jpg}{4.4cm}
 
-% ------------------------------------------------------------
-\begin{frame}{DropConnect: apagar conexiones}
-\begin{columns}[T,totalwidth=\textwidth]
-\column{0.47\textwidth}
-\small
-\begin{itemize}
-  \item La máscara aleatoria actúa sobre pesos individuales, no sobre neuronas completas.
-  \item La activación puede existir, pero algunas conexiones salientes o entrantes se anulan.
-  \item La conectividad efectiva cambia en cada iteración.
-  \item También es una perturbación binaria.
-\end{itemize}
-\column{0.50\textwidth}
-\vfill
-\begin{center}
-\thesisimage[width=\linewidth,height=0.62\textheight,keepaspectratio]{dropconnect y dropout/12_dropconnect_training.jpg}{4.6cm}
-\end{center}
-\smallsource{dropconnect y dropout/12_dropconnect_training.jpg}
+\column{0.48\textwidth}
+\centering
+\textbf{DropConnect}\par\vspace{0.1cm}
+\thesisimage[width=\linewidth,height=0.58\textheight,keepaspectratio,trim=0 0 0 1.25cm,clip]{dropconnect y dropout/12_dropconnect_training.jpg}{4.4cm}
 \end{columns}
+
+\vspace{0.25cm}
+\begin{block}{Idea central}
+Dropout y DropConnect son dos estrategias de dilución aleatoria durante el entrenamiento.
+\end{block}
+\note{
+\begin{itemize}
+  \item En Dropout, en cada iteración del entrenamiento, una fracción de activaciones se anula aleatoriamente.
+  \item La perturbación de Dropout es binaria: cada activación queda activa o apagada.
+  \item Con Dropout, la red no puede depender rígidamente de unidades específicas.
+  \item Puede interpretarse como entrenamiento de muchas subredes implícitas con pesos compartidos.
+  \item En DropConnect, la máscara aleatoria actúa sobre pesos individuales, no sobre neuronas completas.
+  \item En DropConnect, la activación puede existir, pero algunas conexiones salientes o entrantes se anulan.
+  \item La conectividad efectiva cambia en cada iteración.
+  \item DropConnect también es una perturbación binaria.
+  \item Ambos métodos implementan normalizacion durante el entrenamiento
+\end{itemize}
+}
 \end{frame}
 
 % ------------------------------------------------------------
 \begin{frame}{\bd: idea central}
 \begin{columns}[T,totalwidth=\textwidth]
-\column{0.47\textwidth}
-\small
-\begin{itemize}
-  \item No apaga necesariamente la señal.
-  \item Modula multiplicativamente la activación.
-  \item Reemplaza ``apagar/conservar'' por ``modificar amplitud''.
-  \item Introduce dos hiperparámetros principales: frecuencia $p$ e intensidad $\lambda$.
-\end{itemize}
-\vspace{0.15cm}
+\column{0.40\textwidth}
+\vspace{0.45cm}
 \begin{block}{Máscara propuesta}
-\scriptsize
+\small
 \[
  m_j = \begin{cases}
  1+\lambda, & \text{con probabilidad } p,\\
  1, & \text{con probabilidad } 1-p,
  \end{cases}
- \qquad \widetilde h_j = m_j h_j
+\]
+\vspace{-0.15cm}
+\[
+ \widetilde h_j = m_j h_j
 \]
 \end{block}
-\column{0.50\textwidth}
+\column{0.64\textwidth}
 \vfill
 \begin{center}
-\thesisimage[width=\linewidth,height=0.62\textheight,keepaspectratio]{14_boostdropout_training.jpg}{4.6cm}
+\thesisimage[width=\linewidth,height=0.76\textheight,keepaspectratio]{14_boostdropout_training.jpg}{5.8cm}
 \end{center}
 \smallsource{14_boostdropout_training.jpg}
 \end{columns}
-\end{frame}
-
-% ------------------------------------------------------------
-\begin{frame}{Máscara normalizada y vínculo con Dropout}
+\note{
 \begin{itemize}
-  \item El valor esperado de la máscara es
-  \[
-    \mathbb{E}[m_j] = 1 + p\lambda.
-  \]
-  \item Si se quiere preservar la escala esperada, puede usarse
-  \[
-    \widehat m_j = \frac{m_j}{1+p\lambda}, \qquad \mathbb{E}[\widehat m_j]=1.
-  \]
+  \item No apaga necesariamente la señal.
+  \item Modula multiplicativamente la activación.
+  \item Reemplaza ``apagar/conservar'' por ``modificar amplitud''.
+  \item Introduce dos hiperparámetros principales: frecuencia $p$ e intensidad $\lambda$.
+  \item El valor esperado de la máscara es $\mathbb{E}[m_j] = 1 + p\lambda$.
+  \item Si se quiere preservar la escala esperada, puede usarse $\widehat m_j = m_j/(1+p\lambda)$, de modo que $\mathbb{E}[\widehat m_j]=1$.
   \item Si $\lambda=-1$, la máscara pasa a ser binaria sobre $\{0,1\}$.
   \item Con normalización adecuada, ese caso recupera la lógica de \textit{inverted dropout}.
+  \item En esta tesis, la configuración seleccionada de \bd{} usa $p=0.7$, $\lambda=0.9$ y máscara no normalizada.
+  \item Antes de avanzar al diseño experimental, conviene recapitular los tres métodos como una misma familia de regularización estocástica.
+  \item Dropout actúa sobre activaciones con una perturbación binaria: suprime aleatoriamente unidades.
+  \item DropConnect actúa sobre conexiones con una perturbación binaria: suprime aleatoriamente pesos.
+  \item \bd{} actúa sobre activaciones con una perturbación no binaria y multiplicativa: modula estocásticamente la amplitud.
+  \item La diferencia central está en el nivel donde actúa cada máscara y en si la perturbación es binaria o multiplicativa.
 \end{itemize}
-\begin{alertblock}{Diferencia clave}
-En esta tesis, la configuración seleccionada de \bd{} usa $p=0.7$, $\lambda=0.9$ y máscara no normalizada.
-\end{alertblock}
-\end{frame}
-
-% ------------------------------------------------------------
-\begin{frame}{Tres métodos en una misma familia}
-\begin{table}
-\centering
-\small
-\begin{tabularx}{0.96\textwidth}{lXXX}
-\toprule
-Método & Nivel de acción & Tipo de perturbación & Lectura conceptual \\
-\midrule
-Dropout & Activaciones & Binaria & Supresión aleatoria de unidades. \\
-DropConnect & Conexiones & Binaria & Supresión aleatoria de pesos. \\
-\bd & Activaciones & No binaria / multiplicativa & Modulación estocástica de amplitud. \\
-\bottomrule
-\end{tabularx}
-\end{table}
-\vspace{0.5cm}
-\keymsg{Los tres métodos pertenecen a una misma familia de dilución estocástica: perturban la red durante entrenamiento, pero en distintos niveles y con distintas máscaras.}
+}
 \end{frame}
 
 % ------------------------------------------------------------
 \section{Diseño experimental}
 
-\begin{frame}{Diseño experimental}
+\begin{frame}{Experimentación Principal}
+\centering
+\vspace{0.15cm}
+{\Large\bfseries Comparación de métodos de regularización en redes neuronales \textit{feed-forward}}
+
+\vspace{0.35cm}
 \begin{columns}[T,totalwidth=\textwidth]
-\column{0.48\textwidth}
-\textbf{1. Evaluación cuantitativa}
+\column{0.47\textwidth}
+\thesisimage[width=\linewidth,height=0.59\textheight,keepaspectratio]{mnist_ejemplos.jpg}{4.8cm}
+\smallsource{mnist_ejemplos.jpg}
+
+\column{0.50\textwidth}
+\begin{itemize}
+  \item MNIST como tarea de clasificación supervisada.
+  \item Arquitectura compartida para todas las redes comparadas.
+  \item Fase 1: exploración de hiperparámetros y selección por validación.
+  \item Fase 2: evaluación final multisemilla con configuraciones fijadas.
+\end{itemize}
+\end{columns}
+
+\vspace{0.35cm}
+\centering
+%\begin{tabular}{|l|c|c|c|c|}
+%\hline
+%\textbf{Modelo} & \ofn & \don & \dcn & \bdn \\
+%\hline
+%\textbf{Regularización} & Sin reg. & Dropout & DropConnect & \bd \\
+%\hline
+%\end{tabular}
+\note{
 \begin{itemize}
   \item Entrenar redes \textit{feed-forward} sobre MNIST.
   \item Comparar error de test entre \ofn{}, \don{}, \dcn{} y \bdn{}.
   \item Evaluar si \bd{} mejora la generalización frente a regularizadores clásicos.
+  \item La diapositiva introduce solo la experimentación principal: clasificación con redes densas \textit{feed-forward}.
+  \item No introducir todavía el análisis cualitativo con autoencoders.
+  \item Fase 1: exploración mediante grid search de hiperparámetros, varias semillas y selección por validación.
+  \item Fase 2: evaluación final con configuraciones fijadas, entrenamiento multisemilla y reporte en validación y test.
+  \item Remarcar que la evaluación multisemilla evita que una corrida afortunada defina la conclusión.
+  \item Los modelos comparados son \ofn{}, \don{}, \dcn{} y \bdn{}.
+  \item \ofn{} es la arquitectura base sin regularización estocástica.
+  \item \don{} usa la misma arquitectura con Dropout en capas ocultas.
+  \item \dcn{} usa la misma arquitectura con DropConnect en capas densas.
+  \item \bdn{} usa la misma arquitectura con modulación multiplicativa \bd{}.
+  \item La comparación se concentra en el mecanismo de regularización, no en cambiar tamaño, profundidad o dataset.
+  \item MNIST contiene dígitos manuscritos de $0$ a $9$, representados como imágenes de $28\times28$ píxeles.
+  \item Se usa un subconjunto estratificado para reducir costo computacional y volver visible el sobreajuste.
+  \item La decisión metodológica no busca maximizar rendimiento absoluto en MNIST, sino estudiar regularización en un escenario controlado.
+  \item La arquitectura base es una red densa \textit{feed-forward}, con capas ocultas ReLU y salida de 10 clases.
+  \item La misma arquitectura se mantiene para los cuatro modelos comparados.
 \end{itemize}
-
-\column{0.48\textwidth}
-\textbf{2. Análisis cualitativo}
-\begin{itemize}
-  \item Entrenar autoencoders con mecanismos análogos de regularización.
-  \item Visualizar filtros y patrones aprendidos.
-  \item Comparar esparsidad representacional y paramétrica.
-\end{itemize}
-\end{columns}
-\vspace{0.35cm}
-\centering
-\begin{tabular}{|l|c|c|c|c|}
-\hline
-\textbf{Modelo} & \ofn & \don & \dcn & \bdn \\
-\hline
-\textbf{Regularización} & Sin reg. & Dropout & DropConnect & \bd \\
-\hline
-\end{tabular}
+}
 \end{frame}
 
 % ------------------------------------------------------------
-\begin{frame}{Modelos comparados}
-\begin{table}
-\centering
-\begin{tabularx}{0.90\textwidth}{lX}
-\toprule
-Modelo & Descripción \\
-\midrule
-\ofn & Arquitectura base sin regularización estocástica. \\
-\don & Misma arquitectura con Dropout en capas ocultas. \\
-\dcn & Misma arquitectura con DropConnect en capas densas. \\
-\bdn & Misma arquitectura con modulación multiplicativa \bd. \\
-\bottomrule
-\end{tabularx}
-\end{table}
-\vspace{0.4cm}
-\keymsg{La comparación se concentra en el mecanismo de regularización, no en cambiar tamaño, profundidad o dataset.}
-\end{frame}
-
-% ------------------------------------------------------------
-\begin{frame}{Dataset: MNIST y subconjunto controlado}
-\begin{columns}[T,totalwidth=\textwidth]
-\column{0.47\textwidth}
-\thesisimage[width=\linewidth]{mnist_ejemplos.jpg}{4.4cm}
-\smallsource{mnist_ejemplos.jpg}
-\column{0.50\textwidth}
-\begin{itemize}
-  \item MNIST: dígitos manuscritos de $0$ a $9$.
-  \item Imágenes de $28\times28$ píxeles.
-  \item Se usa un subconjunto estratificado.
-  \item El subset reduce costo computacional y vuelve visible el sobreajuste.
-\end{itemize}
-\begin{alertblock}{Decisión metodológica}
-El objetivo no fue maximizar el rendimiento absoluto en MNIST, sino estudiar regularización en un escenario controlado.
-\end{alertblock}
-\end{columns}
-\end{frame}
-
-% ------------------------------------------------------------
-\begin{frame}{Arquitectura base}
-\begin{columns}[T,totalwidth=\textwidth]
-\column{0.42\textwidth}
-\begin{itemize}
-  \item Red densa \textit{feed-forward}.
-  \item Capas ocultas con ReLU.
-  \item Salida de 10 clases.
-  \item Misma arquitectura para los cuatro modelos comparados.
-\end{itemize}
-\column{0.55\textwidth}
-\thesisimage[width=\linewidth,height=0.72\textheight,keepaspectratio]{arquitectura_base_regularizada_limpia.jpg}{6.0cm}
-\smallsource{arquitectura_base_regularizada_limpia.jpg}
-\end{columns}
-\end{frame}
-
-% ------------------------------------------------------------
-\begin{frame}{Protocolo de entrenamiento}
+\begin{frame}{Diapositiva Opcional}
 \begin{table}
 \centering
 \small
@@ -472,7 +420,7 @@ Batch size & $256$. \\
 Activación & ReLU en capas ocultas. \\
 Pérdida & Entropía cruzada para clasificación multiclase. \\
 Validación & Selección de hiperparámetros y artefactos. \\
-Test & Evaluación final reservada. \\
+Test & Reservado para evaluación final. \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -482,45 +430,16 @@ El test no interviene en la búsqueda de hiperparámetros ni en la selección de
 \end{frame}
 
 % ------------------------------------------------------------
-\begin{frame}{Dos fases experimentales}
-\begin{columns}[T,totalwidth=\textwidth]
-\column{0.48\textwidth}
-\begin{block}{Fase 1: exploración}
-\begin{itemize}
-  \item Grid search de hiperparámetros.
-  \item Varias semillas.
-  \item Selección por validación.
-\end{itemize}
-\end{block}
-\column{0.48\textwidth}
-\begin{block}{Fase 2: evaluación final}
-\begin{itemize}
-  \item Configuraciones fijadas.
-  \item Entrenamiento multisemilla.
-  \item Reporte en validación y test.
-\end{itemize}
-\end{block}
-\end{columns}
-\vspace{0.4cm}
-\keymsg{La evaluación multisemilla evita que una corrida afortunada defina la conclusión.}
-\end{frame}
-
-% ------------------------------------------------------------
 \begin{frame}{Criterios de selección: MMV y \textit{early stopping}}
-\begin{columns}[T,totalwidth=\textwidth]
-\column{0.48\textwidth}
-\begin{block}{MMV}
-Mejor modelo según pérdida de validación. Permite seleccionar el mínimo observado durante el entrenamiento.
-\end{block}
-\column{0.48\textwidth}
-\begin{block}{Early stopping}
-Artefacto elegido por una política de detención temprana, usando validación como señal.
-\end{block}
-\end{columns}
-\vspace{0.4cm}
-\begin{alertblock}{Por qué usar ambos}
+\begin{itemize}
+  \item \textbf{MMV:} mejor modelo según pérdida de validación.
+  \item \textbf{MMV:} selecciona el modelo que alcanza la menor pérdida de validación durante todo el entrenamiento.
+  \item \textbf{\textit{Early stopping}:} modelo elegido por una política de detención temprana.
+  \item \textbf{\textit{Early stopping}:} usa pérdida de validación como métrica y una tolerancia definida.
+\end{itemize}
+\note{
 Comparar ambos criterios permite verificar si la conclusión depende del modo de seleccionar el modelo final.
-\end{alertblock}
+}
 \end{frame}
 
 % ------------------------------------------------------------
@@ -1022,72 +941,72 @@ La contribución central es abrir una dirección: estudiar regularización estoc
 \end{frame}
 
 % ------------------------------------------------------------
-\begin{frame}{Mensaje final}
-\centering
-\vspace{0.4cm}
-{\Large\bfseries Esta tesis propone pensar la regularización no solo como supresión aleatoria, sino como una intervención más general sobre la intensidad de las señales internas de una red neuronal.}
-\vspace{0.8cm}
-
-\thesisimage[width=0.42\linewidth]{14_boostdropout_training.jpg}{3.0cm}
-\vfill
-{\large Muchas gracias.}
-\end{frame}
-
-% ------------------------------------------------------------
-\appendix
-\section{Apéndice}
-
-\begin{frame}{Apéndice: ecuaciones clave de \bd}
-\begin{align*}
- m_j &= \begin{cases}
- 1+\lambda, & \text{con probabilidad } p,\\
- 1, & \text{con probabilidad } 1-p,
- \end{cases} \\
- \widetilde h_j &= m_j h_j, \\
- \mathbb{E}[m_j] &= 1+p\lambda, \\
- \widehat m_j &= \frac{m_j}{1+p\lambda} \quad \Rightarrow \quad \mathbb{E}[\widehat m_j]=1.
-\end{align*}
-\begin{block}{Caso límite}
-Para $\lambda=-1$, la máscara se vuelve binaria; con normalización adecuada se recupera la lógica de \textit{inverted dropout}.
-\end{block}
-\end{frame}
-
-\begin{frame}{Apéndice: tablas completas de test}
-\begin{columns}[T,totalwidth=\textwidth]
-\column{0.49\textwidth}
-\textbf{MMV}
-\begin{table}
-\centering
-\scriptsize
-\begin{tabular}{lccccc}
-\toprule
-Modelo & Media & Mediana & Desv. & Mín. & Máx. \\
-\midrule
-\ofn & .0687 & .0681 & .0023 & .0655 & .0726 \\
-\don & .0609 & .0616 & .0036 & .0547 & .0672 \\
-\dcn & .0614 & .0609 & .0029 & .0555 & .0655 \\
-\bdn & .0480 & .0468 & .0036 & .0442 & .0572 \\
-\bottomrule
-\end{tabular}
-\end{table}
-\column{0.49\textwidth}
-\textbf{Early stopping}
-\begin{table}
-\centering
-\scriptsize
-\begin{tabular}{lccccc}
-\toprule
-Modelo & Media & Mediana & Desv. & Mín. & Máx. \\
-\midrule
-\ofn & .0687 & .0681 & .0023 & .0655 & .0726 \\
-\don & .0609 & .0616 & .0036 & .0547 & .0672 \\
-\dcn & .0614 & .0609 & .0029 & .0555 & .0655 \\
-\bdn & .0491 & .0491 & .0028 & .0451 & .0527 \\
-\bottomrule
-\end{tabular}
-\end{table}
-\end{columns}
-\end{frame}
+%\begin{frame}{Mensaje final}
+%\centering
+%\vspace{0.4cm}
+%{\Large\bfseries Esta tesis propone pensar la regularización no solo como supresión aleatoria, sino como una intervención más general sobre la intensidad de las señales internas de una red neuronal.}
+%\vspace{0.8cm}
+%
+%\thesisimage[width=0.42\linewidth]{14_boostdropout_training.jpg}{3.0cm}
+%\vfill
+%{\large Muchas gracias.}
+%\end{frame}
+%
+%% ------------------------------------------------------------
+%\appendix
+%\section{Apéndice}
+%
+%\begin{frame}{Apéndice: ecuaciones clave de \bd}
+%\begin{align*}
+% m_j &= \begin{cases}
+% 1+\lambda, & \text{con probabilidad } p,\\
+% 1, & \text{con probabilidad } 1-p,
+% \end{cases} \\
+% \widetilde h_j &= m_j h_j, \\
+% \mathbb{E}[m_j] &= 1+p\lambda, \\
+% \widehat m_j &= \frac{m_j}{1+p\lambda} \quad \Rightarrow \quad \mathbb{E}[\widehat m_j]=1.
+%\end{align*}
+%\begin{block}{Caso límite}
+%Para $\lambda=-1$, la máscara se vuelve binaria; con normalización adecuada se recupera la lógica de \textit{inverted dropout}.
+%\end{block}
+%\end{frame}
+%
+%\begin{frame}{Apéndice: tablas completas de test}
+%\begin{columns}[T,totalwidth=\textwidth]
+%\column{0.49\textwidth}
+%\textbf{MMV}
+%\begin{table}
+%\centering
+%\scriptsize
+%\begin{tabular}{lccccc}
+%\toprule
+%Modelo & Media & Mediana & Desv. & Mín. & Máx. \\
+%\midrule
+%\ofn & .0687 & .0681 & .0023 & .0655 & .0726 \\
+%\don & .0609 & .0616 & .0036 & .0547 & .0672 \\
+%\dcn & .0614 & .0609 & .0029 & .0555 & .0655 \\
+%\bdn & .0480 & .0468 & .0036 & .0442 & .0572 \\
+%\bottomrule
+%\end{tabular}
+%\end{table}
+%\column{0.49\textwidth}
+%\textbf{Early stopping}
+%\begin{table}
+%\centering
+%\scriptsize
+%\begin{tabular}{lccccc}
+%\toprule
+%Modelo & Media & Mediana & Desv. & Mín. & Máx. \\
+%\midrule
+%\ofn & .0687 & .0681 & .0023 & .0655 & .0726 \\
+%\don & .0609 & .0616 & .0036 & .0547 & .0672 \\
+%\dcn & .0614 & .0609 & .0029 & .0555 & .0655 \\
+%\bdn & .0491 & .0491 & .0028 & .0451 & .0527 \\
+%\bottomrule
+%\end{tabular}
+%\end{table}
+%\end{columns}
+%\end{frame}
 
 \end{document}
 
