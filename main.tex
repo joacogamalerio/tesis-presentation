@@ -49,11 +49,9 @@
 % Esto permite compilar la presentación aun antes de subir las imágenes.
 \newcommand{\thesisimage}[3][]{%
   \IfFileExists{#2}{\includegraphics[#1]{#2}}{%
-    \begin{center}
-    \fbox{\begin{minipage}[c][#3][c]{0.92\linewidth}
+    \makebox[\linewidth][c]{\fbox{\begin{minipage}[c][#3][c]{0.92\linewidth}
       \centering\small\textbf{Imagen pendiente}
-    \end{minipage}}
-    \end{center}}
+    \end{minipage}}}}
 }
 
 \newcommand{\keymsg}[1]{\begin{block}{Mensaje central}\large #1\end{block}}
@@ -867,10 +865,10 @@ La modulación multiplicativa no binaria aparece como una estrategia efectiva de
 \renewcommand{\arraystretch}{0}
 \begin{tabular}{cc}
 \textbf{Esparsidad autoencoder base} & \textbf{Esparsidad Dropout} \\
-\thesisimage[width=0.49\textwidth,height=0.78\textheight,keepaspectratio]{imagenes_resultados/autoencoder/OverFitNet/first_layer_parameter_sparsity.jpg}{6.0cm} &
-\thesisimage[width=0.49\textwidth,height=0.78\textheight,keepaspectratio]{imagenes_resultados/autoencoder/Dropout/first_layer_parameter_sparsity.jpg}{6.0cm}
+\thesisimage[width=0.49\textwidth,height=0.78\textheight,keepaspectratio]{imagenes_resultados/autoencoder/OverFitNet/first_layer_parameter_sparsity.png}{6.0cm} &
+\thesisimage[width=0.49\textwidth,height=0.78\textheight,keepaspectratio]{imagenes_resultados/autoencoder/Dropout/first_layer_parameter_sparsity.png}{6.0cm}
 \end{tabular}
-\smallsource{imagenes_resultados/autoencoder/OverFitNet/first_layer_parameter_sparsity.jpg; imagenes_resultados/autoencoder/Dropout/first_layer_parameter_sparsity.jpg}
+\smallsource{imagenes_resultados/autoencoder/OverFitNet/first_layer_parameter_sparsity.png; imagenes_resultados/autoencoder/Dropout/first_layer_parameter_sparsity.png}
 \end{frame}
 
 % ------------------------------------------------------------
@@ -881,10 +879,10 @@ La modulación multiplicativa no binaria aparece como una estrategia efectiva de
 \renewcommand{\arraystretch}{0}
 \begin{tabular}{cc}
 \textbf{Esparsidad DropConnect} & \textbf{Esparsidad BoostDropout} \\
-\thesisimage[width=0.49\textwidth,height=0.78\textheight,keepaspectratio]{imagenes_resultados/autoencoder/DropConnect/first_layer_parameter_sparsity.jpg}{6.0cm} &
-\thesisimage[width=0.49\textwidth,height=0.78\textheight,keepaspectratio]{imagenes_resultados/autoencoder/BoostDropout/first_layer_parameter_sparsity.jpg}{6.0cm}
+\thesisimage[width=0.49\textwidth,height=0.78\textheight,keepaspectratio]{imagenes_resultados/autoencoder/DropConnect/first_layer_parameter_sparsity.png}{6.0cm} &
+\thesisimage[width=0.49\textwidth,height=0.78\textheight,keepaspectratio]{imagenes_resultados/autoencoder/BoostDropout/first_layer_parameter_sparsity.png}{6.0cm}
 \end{tabular}
-\smallsource{imagenes_resultados/autoencoder/DropConnect/first_layer_parameter_sparsity.jpg; imagenes_resultados/autoencoder/BoostDropout/first_layer_parameter_sparsity.jpg}
+\smallsource{imagenes_resultados/autoencoder/DropConnect/first_layer_parameter_sparsity.png; imagenes_resultados/autoencoder/BoostDropout/first_layer_parameter_sparsity.png}
 \end{frame}
 
 % ------------------------------------------------------------
